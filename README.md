@@ -1,100 +1,219 @@
-# bg-removal
+<div align="center">
+  <h1>🧹 bg-removal</h1>
+  <p><strong>Professional AI-powered background removal service</strong></p>
+  <p>Async processing with Celery queues, FastAPI backend, and React frontend</p>
 
-Project Structure
-
- bg-removal-api/
- ├── app/
- │   ├── main.py
- │   ├── models/
- │   └── utils/
- ├── docker/
- │   └── Dockerfile
- ├── images/
- │   └── test/           <- test images (generate via script)
- ├── scripts/
- │   ├── audit_security.sh
- │   ├── audit_scalability.sh
- │   ├── audit_code_quality.sh
- │   ├── audit_performance.sh
- │   ├── run_all_audits.sh
- │   ├── generate_test_images.py
- │   └── test_images.py
- ├── tests/
- │   └── test_api.py
- ├── .github/
- │   └── workflows/
- │       └── ci-cd.yml
- ├── docs/
- │   └── README.md
- ├── docker-compose.yml
- ├── .dockerignore
- ├── .gitignore
- ├── requirements.txt
- ├── tasks_and_commands.md
- ├── .env
- ├── CONTRIBUTING.md
- ├── SECURITY.md
- ├── LICENCE.md
- └── deploy.sh
+  <!-- Badges -->
+  <p>
+    <img src="https://img.shields.io/badge/python-3.11%2B-blue?style=for-the-badge&logo=python&logoColor=white" alt="Python">
+    <img src="https://img.shields.io/badge/fastapi-0.115-009688?style=for-the-badge&logo=fastapi&logoColor=white" alt="FastAPI">
+    <img src="https://img.shields.io/badge/celery-5.6-37814A?style=for-the-badge&logo=celery&logoColor=white" alt="Celery">
+    <img src="https://img.shields.io/badge/react-19-61DAFB?style=for-the-badge&logo=react&logoColor=white" alt="React">
+    <img src="https://img.shields.io/badge/typescript-5.7-3178C6?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript">
+    <img src="https://img.shields.io/badge/tailwind%20css-4-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white" alt="Tailwind CSS">
+    <img src="https://img.shields.io/badge/redis-7.4-DC382D?style=for-the-badge&logo=redis&logoColor=white" alt="Redis">
+    <img src="https://img.shields.io/badge/docker-compose-2496ED?style=for-the-badge&logo=docker&logoColor=white" alt="Docker">
+    <img src="https://img.shields.io/badge/uvicorn-0.30-499848?style=for-the-badge&logo=uvicorn&logoColor=white" alt="Uvicorn">
+    <img src="https://img.shields.io/badge/vite-6-646CFF?style=for-the-badge&logo=vite&logoColor=white" alt="Vite">
+    <img src="https://img.shields.io/badge/shadcn%20ui-latest-000000?style=for-the-badge&logo=shadcnui&logoColor=white" alt="Shadcn UI">
+    <img src="https://img.shields.io/badge/license-MIT-green?style=for-the-badge" alt="License">
+    <img src="https://img.shields.io/badge/CI-CD%20passing-success?style=for-the-badge&logo=githubactions&logoColor=white" alt="CI/CD">
+  </p>
+</div>
 
 ---
 
-## Quick Start
+## 📸 Snapshot
 
-```bash
-pip install -r requirements.txt
-python scripts/generate_test_images.py
-uvicorn app.main:app --reload
+<p align="center">
+  <img src="images/snapshot.jpg" alt="bg-removal snapshot" width="800">
+</p>
+
+---
+
+## 🚀 Features
+
+- **AI background removal** — Powered by `rembg` with U²-Net deep learning model
+- **Async task queue** — Celery + Redis for non-blocking, scalable processing
+- **Real-time progress** — Frontend polls task status until completion
+- **Drag & drop upload** — Modern React UI with Tailwind CSS 4
+- **Before / after preview** — Side-by-side comparison with one-click download
+- **Dockerized** — Multi-container setup with hot-reload in development
+- **Production ready** — Nginx reverse proxy, health checks, resource limits
+
+---
+
+## 🏗️ Architecture
+
+```
+         ┌──────────────┐
+         │  React/SPA   │
+         │ :5173 (dev)  │
+         └──────┬───────┘
+                │ POST /api/remove-bg/
+                ▼
+         ┌──────────────┐
+         │  FastAPI     │──── task_id ───→ ┌──────────────┐
+         │  :8000       │                  │   Celery     │
+         └──────┬───────┘                  │   Worker     │
+                │ task → Redis             │  (rembg)     │
+                ▼                          └──────┬───────┘
+         ┌──────────────┐                        │ result
+         │    Redis     │◄───────────────────────┘
+         │  (broker)    │
+         └──────┬───────┘
+                │ polling: GET /api/tasks/{id}/status
+                ▼
+         ┌──────────────┐
+         │  Frontend    │──── download: GET /api/tasks/{id}/result
+         │  (preview)   │
+         └──────────────┘
 ```
 
-## Docker
+---
 
-```bash
-docker compose up -d
+## 🛠️ Stack
+
+| Layer | Technology |
+|---|---|
+| **API** | [FastAPI](https://fastapi.tiangolo.com/) + [Uvicorn](https://www.uvicorn.org/) |
+| **Frontend** | [React 19](https://react.dev/) + [TypeScript](https://www.typescriptlang.org/) + [Vite](https://vite.dev/) |
+| **UI** | [Tailwind CSS 4](https://tailwindcss.com/) + [Shadcn UI](https://ui.shadcn.com/) |
+| **Queue** | [Celery](https://docs.celeryq.dev/) + [Redis](https://redis.io/) |
+| **AI Model** | [rembg](https://github.com/danielgatis/rembg) (U²-Net) |
+| **Container** | [Docker Compose](https://docs.docker.com/compose/) |
+| **CI/CD** | [GitHub Actions](https://github.com/features/actions) |
+
+---
+
+## 📦 Project Structure
+
+```
+bg-removal/
+├── apps/
+│   ├── api/                 # FastAPI backend
+│   │   ├── src/
+│   │   │   ├── main.py      # App entry point with lifespan
+│   │   │   ├── api/         # REST routes
+│   │   │   ├── core/        # Config, Redis, Celery app
+│   │   │   ├── models/      # Pydantic schemas
+│   │   │   └── services/    # Background removal logic
+│   │   └── tests/
+│   │
+│   └── web/                 # React frontend
+│       └── src/
+│           ├── components/  # ImageUploader, Preview, Status
+│           ├── pages/       # Home page
+│           ├── hooks/       # useTaskStatus polling
+│           └── lib/         # API client, utils
+│
+├── worker/                  # Celery worker (scalable)
+│   └── src/tasks/           # remove_bg task definition
+│
+├── docker/
+│   ├── docker-compose.yml      # Development environment
+│   ├── docker-compose.prod.yml # Production environment
+│   └── nginx/                  # Reverse proxy config
+│
+├── packages/shared/         # Shared TypeScript types
+├── scripts/                 # Audit & utility scripts
+├── Makefile                 # dev, prod, test, lint, clean
+└── .github/workflows/       # CI/CD pipeline
 ```
 
-## Running Audits (locally or in CI)
+---
 
-All audits can be run individually or together:
+## ⚡ Quick Start
 
 ```bash
-# Individual audits
-bash scripts/audit_security.sh
-bash scripts/audit_scalability.sh
-bash scripts/audit_code_quality.sh
-bash scripts/audit_performance.sh
+# Prerequisites: Docker and Docker Compose
 
-# All audits sequentially
+# Start all services
+make dev
+
+# Or explicitly:
+docker compose -f docker/docker-compose.yml up --build
+```
+
+### Services
+
+| Service | URL | Description |
+|---|---|---|
+| **Frontend** | http://localhost:5173 | React SPA with upload & preview |
+| **API** | http://localhost:8000 | FastAPI backend |
+| **API Docs** | http://localhost:8000/docs | Swagger UI |
+| **Redis** | localhost:6379 | Message broker |
+
+---
+
+## 🔄 How it Works
+
+1. **Upload** — Drag & drop image in the web UI → `POST /api/remove-bg/`
+2. **Queue** — API enqueues a Celery task → returns `task_id` immediately
+3. **Process** — Celery worker picks up the task, runs `rembg` to remove background
+4. **Poll** — Frontend polls `GET /api/tasks/{id}/status` every second
+5. **Download** — Once complete, preview side-by-side and download PNG
+
+```
+POST /api/remove-bg/  →  { task_id: "abc-123" }
+GET  /api/tasks/abc-123/status  →  PENDING → STARTED → SUCCESS
+GET  /api/tasks/abc-123/result  →  image/png (binary)
+```
+
+---
+
+## 🧪 Commands
+
+```bash
+make dev          # Start development environment
+make dev-build    # Rebuild and start
+make dev-down     # Stop development
+make prod         # Start production
+make prod-build   # Rebuild production and start
+make test         # Run API tests
+make lint         # Lint backend code
+make clean        # Remove all containers and volumes
+```
+
+---
+
+## 🧰 Testing
+
+```bash
+# Run API tests
+docker compose -f docker/docker-compose.yml exec api pytest
+
+# Run all quality audits
 bash scripts/run_all_audits.sh
 ```
 
-### What each audit checks
+---
 
-| Audit | Tool | What it checks |
-|---|---|---|
-| **Security** | bandit, pip-audit | Static security analysis, dependency vulnerabilities |
-| **Scalability** | custom | Async patterns, connection pooling, rate limiting, Docker resource limits |
-| **Code Quality** | ruff, mypy | Lint, type safety, dead code, hardcoded secrets |
-| **Performance** | custom | Import time, blocking calls, caching, compression |
+## 📈 Performance
 
-## Testing Images
+| Metric | Value |
+|---|---|
+| First request (model download) | ~55s |
+| Subsequent requests | ~1.6s |
+| Max file size | 10MB |
+| Supported formats | PNG, JPEG, WEBP |
+| Queue broker | Redis |
+| Task result TTL | 1 hour |
 
-Generate test images of various sizes, then run them against the API:
+---
 
-```bash
-# Generate test images
-python scripts/generate_test_images.py
+## 🤝 Contributing
 
-# Test all images against the API
-python scripts/test_images.py                           # uses images/test/
-python scripts/test_images.py --dir /path/to/images
-python scripts/test_images.py --url http://localhost:8000/remove-bg/
-python scripts/test_images.py --json                    # JSON output
-```
+Contributions are welcome! Please read [CONTRIBUTING.md](CONTRIBUTING.md) before submitting a pull request.
 
-## Running Tests
+---
 
-```bash
-pytest tests/ -v
-pytest tests/ --benchmark-only         # performance benchmarks
-```
+## 📄 License
+
+[MIT](LICENCE.md) © 2026
+
+---
+
+<div align="center">
+  <sub>Built with ❤️ using FastAPI, Celery, React, and Docker</sub>
+</div>

@@ -9,6 +9,12 @@ build/
 .venv
 venv/
 env/
+*.egg-info/
+.ruff_cache/
+.mypy_cache/
+
+# Node
+node_modules/
 
 # IDE
 .vscode/
@@ -17,6 +23,7 @@ env/
 *.swo
 
 # Environment
+.env
 .env.local
 .env.production
 
@@ -38,5 +45,8 @@ images/test/
 .pytest_cache/
 htmlcov/
 .coverage
-.env
+
+# Archives
+*.legacy.yml
+Dockerfile.legacy
 
