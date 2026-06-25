@@ -1,0 +1,21 @@
+fastapi
+uvicorn
+rembg[cpu]
+psycopg2-binary
+redis
+python-dotenv
+pydantic
+python-multipart
+Pillow
+requests
+
+# Testing
+pytest
+httpx
+pytest-benchmark
+
+# Quality & Security
+ruff
+mypy
+bandit
+pip-audit

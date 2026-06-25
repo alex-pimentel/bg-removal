@@ -1,0 +1,36 @@
+# Git
+.git/
+.gitignore
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+venv/
+.env
+
+# IDE
+.vscode/
+.idea/
+
+# Docker
+.docker/
+
+# Logs
+logs/
+*.log
+
+# Testing
+.pytest_cache/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Project files
+README.md
+CONTRIBUTING.md
+SECURITY.md
+LICENCE.md
+tasks_and_commands.md
+docker-compose.yml
