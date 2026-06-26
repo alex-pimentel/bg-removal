@@ -12,11 +12,7 @@ class Settings(BaseSettings):
     VERSION: str = "1.0.0"
     DEBUG: bool = True
 
-    CORS_ORIGINS: list[str] = [
-        "http://localhost:5173",
-        "http://localhost:3000",
-        "http://localhost:8000",
-    ]
+    CORS_ORIGINS: list[str] = ["*"]
 
     REDIS_URL: str = "redis://redis:6379/0"
     CELERY_BROKER_URL: str = "redis://redis:6379/0"
