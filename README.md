@@ -256,4 +256,6 @@ Special thanks to **Cloudflare** for the generous free tier that makes it possib
 
 <div align="center">
   <sub>Built with ❤️ using FastAPI, Celery, React, and Docker</sub>
+  <br />
+  <a href="https://bg-removal.agenteresolve.com.br/" target="_blank"><strong>test now →</strong></a>
 </div>
