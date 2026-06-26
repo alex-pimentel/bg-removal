@@ -20,7 +20,9 @@ jobs:
       CELERY_BROKER_URL: redis://localhost:6379/0
       CELERY_RESULT_BACKEND: redis://localhost:6379/0
     steps:
-      - uses: ./.github/actions/setup-python
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
         with:
-          working-directory: apps/api
+          python-version: "3.11"
+      - run: pip install -e ".[dev]"
       - run: pytest tests/ -v

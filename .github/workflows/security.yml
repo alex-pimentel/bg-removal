@@ -11,10 +11,11 @@ jobs:
       run:
         working-directory: apps/api
     steps:
-      - uses: ./.github/actions/setup-python
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
         with:
-          working-directory: apps/api
-          extra-packages: bandit pip-audit
+          python-version: "3.11"
+      - run: pip install -e ".[dev]" bandit pip-audit
       - run: bandit -r src/ -x tests -s B104
       - run: |
           python3 -c '
