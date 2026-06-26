@@ -26,10 +26,12 @@ class Settings(BaseSettings):
 
     @field_validator("CORS_ORIGINS", mode="before")
     @classmethod
-    def parse_cors_origins(cls, v):
+    def parse_cors_origins(cls, v: object) -> list[str]:
         if isinstance(v, str):
             return [x.strip() for x in v.split(",")]
-        return v
+        if isinstance(v, list):
+            return v
+        return [str(v)]
 
 
 settings = Settings()
