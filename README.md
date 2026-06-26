@@ -240,6 +240,12 @@ Contributions are welcome! Please read [CONTRIBUTING.md](CONTRIBUTING.md) before
 
 ---
 
+## ☁️ Deploy
+The frontend is deployed on **Cloudflare Pages**.
+[![Cloudflare Pages](https://img.shields.io/badge/Cloudflare%20Pages-F38020?style=for-the-badge&logo=Cloudflare&logoColor=white)](https://pages.cloudflare.com/)
+Special thanks to **Cloudflare** for the generous free tier that makes it possible to serve this project's frontend at the edge, worldwide, with zero configuration overhead.
+---
+
 ## 📄 License
 
 [MIT](LICENCE.md) © 2026

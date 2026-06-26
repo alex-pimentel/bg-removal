@@ -1,0 +1,5 @@
+name = "bg-removal"
+pages_build_output_dir = "dist"
+
+[build]
+command = "npm ci && npm run build"
