@@ -1,0 +1,34 @@
+name: Setup Python
+description: Checkout, setup Python, and install dependencies
+
+inputs:
+  python-version:
+    description: Python version
+    default: "3.11"
+    required: false
+  working-directory:
+    description: Working directory for pip install
+    required: true
+  install-extras:
+    description: Extras for pip install -e .[extras]
+    default: "[dev]"
+    required: false
+  extra-packages:
+    description: Additional pip packages
+    default: ""
+    required: false
+
+runs:
+  using: composite
+  steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-python@v5
+      with:
+        python-version: ${{ inputs.python-version }}
+    - run: pip install -e ".${{ inputs.install-extras }}"
+      working-directory: ${{ inputs.working-directory }}
+      shell: bash
+    - if: inputs.extra-packages != ''
+      run: pip install ${{ inputs.extra-packages }}
+      working-directory: ${{ inputs.working-directory }}
+      shell: bash

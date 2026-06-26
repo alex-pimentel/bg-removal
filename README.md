@@ -20,6 +20,7 @@
   </p>
 
   <p>
+    <a href="https://github.com/alex-pimentel/bg-removal/actions/workflows/ci.yml"><img src="https://github.com/alex-pimentel/bg-removal/actions/workflows/ci.yml/badge.svg?branch=main" alt="CI"></a>
     <a href="https://github.com/alex-pimentel/bg-removal/actions/workflows/lint.yml"><img src="https://github.com/alex-pimentel/bg-removal/actions/workflows/lint.yml/badge.svg?branch=main" alt="Lint"></a>
     <a href="https://github.com/alex-pimentel/bg-removal/actions/workflows/test.yml"><img src="https://github.com/alex-pimentel/bg-removal/actions/workflows/test.yml/badge.svg?branch=main" alt="Test"></a>
     <a href="https://github.com/alex-pimentel/bg-removal/actions/workflows/security.yml"><img src="https://github.com/alex-pimentel/bg-removal/actions/workflows/security.yml/badge.svg?branch=main" alt="Security"></a>

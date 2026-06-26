@@ -1,10 +1,8 @@
 name: Test
 
 on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
+  workflow_call:
+  workflow_dispatch:
 
 jobs:
   test-api:
@@ -22,9 +20,7 @@ jobs:
       CELERY_BROKER_URL: redis://localhost:6379/0
       CELERY_RESULT_BACKEND: redis://localhost:6379/0
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: ./.github/actions/setup-python
         with:
-          python-version: "3.11"
-      - run: pip install -e .[dev]
+          working-directory: apps/api
       - run: pytest tests/ -v

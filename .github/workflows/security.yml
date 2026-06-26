@@ -1,25 +1,25 @@
 name: Security
 
 on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
+  workflow_call:
+  workflow_dispatch:
 
 jobs:
   security:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/api
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: ./.github/actions/setup-python
         with:
-          python-version: "3.11"
-      - run: pip install -e apps/api/.[dev] bandit pip-audit
-      - run: bandit -r apps/api/src/ -x tests -s B104
+          working-directory: apps/api
+          extra-packages: bandit pip-audit
+      - run: bandit -r src/ -x tests -s B104
       - run: |
           python3 -c '
           import tomllib
-          with open("apps/api/pyproject.toml", "rb") as f:
+          with open("pyproject.toml", "rb") as f:
               data = tomllib.load(f)
           with open("/tmp/reqs.txt", "w") as f:
               for dep in data["project"]["dependencies"]:
