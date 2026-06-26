@@ -8,18 +8,15 @@ jobs:
   deploy-pages:
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    env:
-      NODE_OPTIONS: --no-deprecation
     defaults:
       run:
         working-directory: apps/web
     steps:
       - uses: actions/checkout@v7
-      - uses: actions/setup-node@v6
+      - uses: actions/download-artifact@v4
         with:
-          node-version: 22
-      - run: npm install
-      - run: npm run build
+          name: web-dist
+          path: apps/web/dist
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/wrangler-action@v4
         with:
