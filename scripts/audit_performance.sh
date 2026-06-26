@@ -30,7 +30,7 @@ check() {
 }
 
 # 1. Check for heavy model loading at import time
-IMPORT_TIME=$(python3 -c "import time; s=time.time(); from app.main import app; print(f'{(time.time()-s)*1000:.0f}ms')" 2>&1 || true)
+IMPORT_TIME=$(cd apps/api && python3 -c "import time; s=time.time(); from src.main import app; print(f'{(time.time()-s)*1000:.0f}ms')" 2>&1 || true)
 if [[ "$IMPORT_TIME" =~ ^[0-9] ]]; then
     if [ "${IMPORT_TIME%ms}" -gt 5000 ]; then
         RESULT="  WARN: import takes ${IMPORT_TIME} (model loads at import)"
@@ -43,7 +43,7 @@ fi
 check "Import time" "$RESULT"
 
 # 2. Check for lazy imports in endpoints
-LAZY_IMPORTS=$(grep -rn "import\|from" app/main.py 2>/dev/null | head -20 || true)
+LAZY_IMPORTS=$(grep -rn "import\|from" apps/api/src/main.py 2>/dev/null | head -20 || true)
 if echo "$LAZY_IMPORTS" | grep -q "rembg"; then
     RESULT="  WARN: rembg imported at module level (adds startup latency)"
 else
@@ -52,7 +52,7 @@ fi
 check "Lazy imports" "$RESULT"
 
 # 3. Check image processing in endpoint (no background task)
-if grep -q "remove(" app/main.py 2>/dev/null; then
+if grep -q "remove(" apps/api/src/main.py 2>/dev/null; then
     RESULT="  WARN: image processing runs synchronously in request (blocks the event loop)"
 else
     RESULT="  PASS: no blocking calls in endpoint"
@@ -60,7 +60,7 @@ fi
 check "Blocking calls" "$RESULT"
 
 # 4. Check for missing cache headers
-if grep -rn "Cache-Control\|cachecontrol\|cache_control\|@cache" app/ --include="*.py" 2>/dev/null; then
+if grep -rn "Cache-Control\|cachecontrol\|cache_control\|@cache" apps/api/src/ --include="*.py" 2>/dev/null; then
     RESULT="  PASS: cache headers found"
 else
     RESULT="  WARN: no caching strategy configured"
@@ -68,7 +68,7 @@ fi
 check "Caching" "$RESULT"
 
 # 5. Check for missing compression middleware
-if grep -rn "GZipMiddleware\|CompressMiddleware\|gzip\|compress" app/main.py 2>/dev/null; then
+if grep -rn "GZipMiddleware\|CompressMiddleware\|gzip\|compress" apps/api/src/main.py 2>/dev/null; then
     RESULT="  PASS: compression middleware found"
 else
     RESULT="  WARN: no compression middleware (consider GZipMiddleware for large images)"
@@ -79,7 +79,7 @@ check "Compression" "$RESULT"
 echo ""
 echo "--- Benchmark (pytest-benchmark) ---"
 if python3 -c "import pytest_benchmark" 2>/dev/null; then
-    python3 -m pytest tests/ --benchmark-only --benchmark-warmup=on --benchmark-min-rounds=3 2>&1 || true
+    cd apps/api && python3 -m pytest tests/ --benchmark-only --benchmark-warmup=on --benchmark-min-rounds=3 2>&1 || true
 else
     echo "  pytest-benchmark not installed — skipping benchmark."
     echo "  Install: pip install pytest-benchmark"

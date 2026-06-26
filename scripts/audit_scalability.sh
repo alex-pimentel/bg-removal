@@ -31,13 +31,13 @@ check() {
 
 # 1. Check for blocking IO in async endpoints
 echo "--- 1. Sync IO in async routes ---"
-SYNC_IO=$(grep -rn "open(" app/main.py app/utils/ 2>/dev/null || true)
-SYNC_IO_ASYNC=$(grep -rn -B5 "open(" app/main.py app/utils/ 2>/dev/null | grep -i "async\|@app" || true)
+SYNC_IO=$(grep -rn "open(" apps/api/src/main.py apps/api/src/api/ 2>/dev/null || true)
+SYNC_IO_ASYNC=$(grep -rn -B5 "open(" apps/api/src/main.py apps/api/src/api/ 2>/dev/null | grep -i "async\|@app\|@router" || true)
 if [ -n "$SYNC_IO" ]; then
-    if grep -q "open(" app/main.py; then
-        RESULT="  WARN: sync open() calls found in app/main.py (consider aiofiles)"
+    if grep -q "open(" apps/api/src/main.py apps/api/src/api/ 2>/dev/null; then
+        RESULT="  WARN: sync open() calls found in async context (consider aiofiles)"
     else
-        RESULT="  PASS: no sync IO in main app"
+        RESULT="  PASS: no sync IO in async routes"
     fi
 else
     RESULT="  PASS: no sync IO found"
@@ -45,8 +45,8 @@ fi
 check "Sync IO check" "$RESULT"
 
 # 2. Check for async endpoint definitions (FastAPI best practice)
-ASYNC_ENDPOINTS=$(grep -c "async def" app/main.py || true)
-SYNC_ENDPOINTS=$(grep -c "@app.*\ndef " app/main.py || true)
+ASYNC_ENDPOINTS=$(grep -c "async def" apps/api/src/api/routes.py || true)
+SYNC_ENDPOINTS=$(grep -c "@router.*\ndef " apps/api/src/api/routes.py || true)
 if [ "$ASYNC_ENDPOINTS" -ge "$SYNC_ENDPOINTS" ] && [ "$ASYNC_ENDPOINTS" -gt 0 ]; then
     RESULT="  PASS: $ASYNC_ENDPOINTS async endpoints, $SYNC_ENDPOINTS sync"
 elif [ "$ASYNC_ENDPOINTS" -eq 0 ] && [ "$SYNC_ENDPOINTS" -eq 0 ]; then
@@ -57,7 +57,7 @@ fi
 check "Async endpoints" "$RESULT"
 
 # 3. Check for connection pooling / timeout config
-if grep -q "pool\|pool_size\|pool_recycle\|max_connections\|timeout" app/main.py app/utils/*.py requirements.txt 2>/dev/null; then
+if grep -q "pool\|pool_size\|pool_recycle\|max_connections\|timeout" apps/api/src/main.py apps/api/src/core/*.py apps/api/pyproject.toml 2>/dev/null; then
     RESULT="  PASS: connection pooling config found"
 else
     RESULT="  WARN: no connection pooling config found (may exhaust connections under load)"
@@ -65,7 +65,7 @@ fi
 check "Connection pooling" "$RESULT"
 
 # 4. Check for pagination on list endpoints
-if grep -rn "limit\|offset\|page\|paginate" app/ --include="*.py" 2>/dev/null; then
+if grep -rn "limit\|offset\|page\|paginate" apps/api/src/ --include="*.py" 2>/dev/null; then
     RESULT="  PASS: pagination found"
 else
     RESULT="  PASS: no list endpoints to paginate (single endpoint app)"
@@ -73,7 +73,7 @@ fi
 check "Pagination" "$RESULT"
 
 # 5. Check for rate limiting
-if grep -rn "limiter\|ratelimit\|throttle\|slowapi" app/ requirements.txt 2>/dev/null; then
+if grep -rn "limiter\|ratelimit\|throttle\|slowapi" apps/api/src/ apps/api/pyproject.toml 2>/dev/null; then
     RESULT="  PASS: rate limiting found"
 else
     RESULT="  WARN: no rate limiting configured (consider slowapi for production)"
@@ -81,7 +81,7 @@ fi
 check "Rate limiting" "$RESULT"
 
 # 6. Check for database connection string config
-if grep -q "pool_size\|max_connections\|connection_limit" app/main.py app/utils/*.py 2>/dev/null; then
+if grep -q "pool_size\|max_connections\|connection_limit" apps/api/src/main.py apps/api/src/core/*.py 2>/dev/null; then
     RESULT="  PASS: explicit connection limits configured"
 else
     RESULT="  PASS: no database connections used (stateless API)"
@@ -89,7 +89,7 @@ fi
 check "Connection limits" "$RESULT"
 
 # 7. Check Docker healthcheck
-if grep -q "healthcheck" docker-compose.yml docker/Dockerfile 2>/dev/null; then
+if grep -q "healthcheck" docker/docker-compose.yml apps/api/Dockerfile 2>/dev/null; then
     RESULT="  PASS: healthcheck configured"
 else
     RESULT="  WARN: no healthcheck configured in docker-compose.yml"
@@ -97,7 +97,7 @@ fi
 check "Docker healthcheck" "$RESULT"
 
 # 8. Check for resource limits in docker-compose
-if grep -q "mem_limit\|memory:\|cpus:" docker-compose.yml 2>/dev/null; then
+if grep -q "mem_limit\|memory:\|cpus:" docker/docker-compose.yml 2>/dev/null; then
     RESULT="  PASS: resource limits configured"
 else
     RESULT="  WARN: no CPU/memory limits in docker-compose.yml"
@@ -105,7 +105,7 @@ fi
 check "Resource limits" "$RESULT"
 
 # 9. Check timeout on HTTP client
-if grep -rn "timeout" app/ --include="*.py" 2>/dev/null; then
+if grep -rn "timeout" apps/api/src/ --include="*.py" 2>/dev/null; then
     RESULT="  PASS: timeout configured on HTTP calls"
 else
     RESULT="  PASS: no outbound HTTP calls to configure timeouts"

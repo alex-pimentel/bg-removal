@@ -17,7 +17,14 @@
     <img src="https://img.shields.io/badge/vite-6-646CFF?style=for-the-badge&logo=vite&logoColor=white" alt="Vite">
     <img src="https://img.shields.io/badge/shadcn%20ui-latest-000000?style=for-the-badge&logo=shadcnui&logoColor=white" alt="Shadcn UI">
     <img src="https://img.shields.io/badge/license-MIT-green?style=for-the-badge" alt="License">
-    <img src="https://img.shields.io/badge/CI-CD%20passing-success?style=for-the-badge&logo=githubactions&logoColor=white" alt="CI/CD">
+  </p>
+
+  <p>
+    <a href="https://github.com/alex-pimentel/bg-removal/actions/workflows/lint.yml"><img src="https://github.com/alex-pimentel/bg-removal/actions/workflows/lint.yml/badge.svg?branch=main" alt="Lint"></a>
+    <a href="https://github.com/alex-pimentel/bg-removal/actions/workflows/test.yml"><img src="https://github.com/alex-pimentel/bg-removal/actions/workflows/test.yml/badge.svg?branch=main" alt="Test"></a>
+    <a href="https://github.com/alex-pimentel/bg-removal/actions/workflows/security.yml"><img src="https://github.com/alex-pimentel/bg-removal/actions/workflows/security.yml/badge.svg?branch=main" alt="Security"></a>
+    <a href="https://github.com/alex-pimentel/bg-removal/actions/workflows/audit.yml"><img src="https://github.com/alex-pimentel/bg-removal/actions/workflows/audit.yml/badge.svg?branch=main" alt="Audit"></a>
+    <a href="https://github.com/alex-pimentel/bg-removal/actions/workflows/build.yml"><img src="https://github.com/alex-pimentel/bg-removal/actions/workflows/build.yml/badge.svg?branch=main" alt="Build"></a>
   </p>
 </div>
 
@@ -118,7 +125,7 @@ bg-removal/
 ├── packages/shared/         # Shared TypeScript types
 ├── scripts/                 # Audit & utility scripts
 ├── Makefile                 # dev, prod, test, lint, clean
-└── .github/workflows/       # CI/CD pipeline
+└── .github/workflows/       # CI/CD pipelines (lint, test, security, audit, build)
 ```
 
 ---
@@ -173,6 +180,13 @@ make prod-build   # Rebuild production and start
 make test         # Run API tests
 make lint         # Lint backend code
 make clean        # Remove all containers and volumes
+
+make act-lint      # Simulate lint workflow locally (via act)
+make act-test      # Simulate test workflow locally (Redis included)
+make act-security  # Simulate security workflow locally
+make act-audit     # Simulate audit workflow locally
+make act-build     # Simulate build workflow locally
+make act-all       # Simulate all workflows sequentially
 ```
 
 ---
@@ -186,6 +200,23 @@ docker compose -f docker/docker-compose.yml exec api pytest
 # Run all quality audits
 bash scripts/run_all_audits.sh
 ```
+
+### Local CI simulation
+
+Requires [act](https://github.com/nektos/act) + Docker:
+
+```bash
+# Install act
+curl -s https://raw.githubusercontent.com/nektos/act/master/install.sh | sudo bash -s -- -b /usr/local/bin
+
+# Simulate a single workflow
+make act-lint
+
+# Simulate all workflows
+make act-all
+```
+
+`make act-test` automatically provisions a Redis container via `services.redis` — no manual setup needed.
 
 ---
 

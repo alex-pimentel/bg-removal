@@ -43,11 +43,11 @@ check() {
     fi
 }
 
-check "Ruff (lint)" "$PYTHON -m ruff check app/ tests/ scripts/*.py 2>&1"
-check "MyPy (types)" "$PYTHON -m mypy app/ --ignore-missing-imports 2>&1" "true"
+check "Ruff (lint)" "$PYTHON -m ruff check apps/api/src/ 2>&1"
+check "MyPy (types)" "$PYTHON -m mypy apps/api/src/ --ignore-missing-imports 2>&1" "true"
 
 # Check for TODO/FIXME/HACK/XXX markers
-TODOS=$(grep -rn "TODO\|FIXME\|HACK\|XXX" app/ --include="*.py" 2>/dev/null || true)
+TODOS=$(grep -rn "TODO\|FIXME\|HACK\|XXX" apps/api/src/ --include="*.py" 2>/dev/null || true)
 if [ -z "$TODOS" ]; then
     echo "  PASS: no TODO/FIXME markers"
     PASS=$((PASS + 1))
@@ -58,7 +58,7 @@ else
 fi
 
 # Check for debug print() statements
-PRINTS=$(grep -rn "print(" app/ --include="*.py" 2>/dev/null || true)
+PRINTS=$(grep -rn "print(" apps/api/src/ apps/web/src/ --include="*.py" --include="*.ts" --include="*.tsx" 2>/dev/null || true)
 if [ -z "$PRINTS" ]; then
     echo "  PASS: no print() statements in app code"
     PASS=$((PASS + 1))
@@ -69,7 +69,7 @@ else
 fi
 
 # Check for hardcoded secrets
-SECRETS=$(grep -rn "password\|secret\|token\|api_key\|api-key" app/ --include="*.py" -i 2>/dev/null || true)
+SECRETS=$(grep -rn "password\|secret\|token\|api_key\|api-key" apps/api/src/ apps/web/src/ --include="*.py" --include="*.ts" --include="*.tsx" -i 2>/dev/null || true)
 if [ -z "$SECRETS" ]; then
     echo "  PASS: no hardcoded secrets"
     PASS=$((PASS + 1))

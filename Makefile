@@ -1,4 +1,5 @@
-.PHONY: dev dev-build dev-down prod prod-build prod-down test lint clean
+.PHONY: dev dev-build dev-down prod prod-build prod-down test lint clean \
+        act-check act-lint act-test act-security act-audit act-build act-all
 
 # Development
 dev:
@@ -27,6 +28,38 @@ test:
 # Linting
 lint:
 	docker compose -f docker/docker-compose.yml exec api ruff check src/
+
+# GitHub Actions local simulation (requires act + Docker)
+ACT := $(shell command -v act 2>/dev/null || (test -x ./bin/act && echo "./bin/act") || echo "")
+
+act-check:
+	@if [ -z "$(ACT)" ]; then \
+		echo "act is required. Install:"; \
+		echo "  curl -s https://raw.githubusercontent.com/nektos/act/master/install.sh | sudo bash -s -- -b /usr/local/bin"; \
+		exit 1; \
+	fi
+
+act-lint: act-check
+	$(ACT) -W .github/workflows/lint.yml
+
+act-test: act-check
+	$(ACT) -W .github/workflows/test.yml
+
+act-security: act-check
+	$(ACT) -W .github/workflows/security.yml
+
+act-audit: act-check
+	$(ACT) -W .github/workflows/audit.yml
+
+act-build: act-check
+	$(ACT) -W .github/workflows/build.yml
+
+act-all: act-check
+	$(ACT) -W .github/workflows/lint.yml && \
+	$(ACT) -W .github/workflows/test.yml && \
+	$(ACT) -W .github/workflows/security.yml && \
+	$(ACT) -W .github/workflows/audit.yml && \
+	$(ACT) -W .github/workflows/build.yml
 
 # Cleanup
 clean:

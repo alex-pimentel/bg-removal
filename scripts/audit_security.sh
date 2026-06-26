@@ -33,8 +33,8 @@ check() {
     fi
 }
 
-check "Bandit (static analysis)" "$PYTHON -m bandit -r app/ -x venv,tests 2>&1"
-check "pip-audit (dependencies)" "$PYTHON -m pip_audit --strict --requirement requirements.txt 2>&1"
+check "Bandit (static analysis)" "$PYTHON -m bandit -r apps/api/src/ -x tests 2>&1"
+check "pip-audit (dependencies)" "$PYTHON -m pip_audit --strict 2>&1"
 
 echo ""
 echo "================================================"
