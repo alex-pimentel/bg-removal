@@ -1,9 +1,13 @@
+import os
+
 from celery import Celery
+
+REDIS_URL = os.environ.get("REDIS_URL", "redis://redis:6379/0")
 
 celery_app = Celery(
     "bg-removal",
-    broker="redis://redis:6379/0",
-    backend="redis://redis:6379/0",
+    broker=os.environ.get("CELERY_BROKER_URL", REDIS_URL),
+    backend=os.environ.get("CELERY_RESULT_BACKEND", REDIS_URL),
     include=["src.tasks.remove_bg"],
 )
 
