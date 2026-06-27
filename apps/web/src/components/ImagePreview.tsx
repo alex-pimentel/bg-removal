@@ -1,4 +1,6 @@
-import { Download, RotateCcw } from "lucide-react"
+import { Download, Info, RotateCcw } from "lucide-react"
+
+const MAX_DIMENSION = 1200
 
 interface Props {
   original: string
@@ -63,6 +65,18 @@ export default function ImagePreview({ original, resultUrl, onReset }: Props) {
           <RotateCcw className="h-5 w-5" />
           Remove another
         </button>
+      </div>
+
+      <div className="mt-6 text-center text-xs text-slate-400">
+        <Info className="mr-1 inline-block h-3.5 w-3.5" />
+        Max resolution: {MAX_DIMENSION}&times;{MAX_DIMENSION}px &middot;{" "}
+        <a
+          href="mailto:alex@agenteresolve.com.br"
+          className="text-blue-500 hover:text-blue-600 underline"
+        >
+          Contact us
+        </a>{" "}
+        for unlimited version
       </div>
     </div>
   )

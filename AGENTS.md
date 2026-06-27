@@ -59,11 +59,17 @@ GET  /health                → {"status":"ok"}
 - mypy: `strict=true`, `ignore_missing_imports=true`
 - Commands: `ruff check src/`, `mypy src/` — must run from `apps/api/` directory
 
+## ## Image size limits
+
+- Images are resized client-side (browser canvas) to max **1200×1200px** before upload to save bandwidth and server resources
+- Worker also applies a safety resize (`worker/src/tasks/resize.py::resize_image_safe`) as defense-in-depth
+- Resize maintains original aspect ratio and does not upscale (images smaller than 1200px are unaffected)
+- Output resolution notice is displayed on the upload page and result preview
+
 ## Tests
 
-- Pytest with `TestClient` in `apps/api/tests/test_api.py`
-- Tests run against the FastAPI app directly (no Docker/Redis needed for unit tests)
-- Invoke via `make test` or `docker compose ... exec api pytest`
+- **API**: Pytest with `TestClient` in `apps/api/tests/test_api.py` — tests run against FastAPI directly (no Docker/Redis needed). Invoke via `make test` or `docker compose ... exec api pytest`
+- **Worker**: Unit tests in `worker/tests/test_remove_bg.py` test `resize_image_safe` independently. Run via `PYTHONPATH=src python3 -m pytest tests/` inside `worker/` (only requires Pillow, not rembg)
 
 ## Performance note
 

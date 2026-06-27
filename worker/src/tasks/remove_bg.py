@@ -3,6 +3,7 @@ import io
 from PIL import Image
 from rembg import remove
 
+from src.tasks.resize import MAX_DIMENSION, resize_image_safe
 from src.worker import celery_app
 
 
@@ -10,6 +11,7 @@ from src.worker import celery_app
 def remove_bg(self, image_bytes: bytes) -> dict:
     try:
         input_image = Image.open(io.BytesIO(image_bytes))
+        input_image = resize_image_safe(input_image, MAX_DIMENSION)
         output_image = remove(input_image)
         output_buffer = io.BytesIO()
         output_image.save(output_buffer, format="PNG")

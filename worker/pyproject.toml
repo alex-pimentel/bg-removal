@@ -10,6 +10,11 @@ dependencies = [
     "Pillow>=10.0.0",
 ]
 
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+]
+
 [tool.ruff]
 target-version = "py311"
 line-length = 100
