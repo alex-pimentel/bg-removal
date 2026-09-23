@@ -10,6 +10,7 @@ services:
       - REDIS_URL=redis://redis:6379/0
       - CELERY_BROKER_URL=redis://redis:6379/0
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
+      - CELERY_QUEUE=bg-removal
       - DEBUG=true
     volumes:
       - ../apps/api/src:/app/src
@@ -39,6 +40,7 @@ services:
       - REDIS_URL=redis://redis:6379/0
       - CELERY_BROKER_URL=redis://redis:6379/0
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
+      - CELERY_QUEUE=bg-removal
     volumes:
       - ../worker/src:/app/src
     depends_on:
