@@ -18,6 +18,7 @@ class Settings(BaseSettings):
     REDIS_URL: str = "redis://redis:6379/0"
     CELERY_BROKER_URL: str = "redis://redis:6379/0"
     CELERY_RESULT_BACKEND: str = "redis://redis:6379/0"
+    CELERY_QUEUE: str = "bg-removal"
 
     API_HOST: str = "0.0.0.0"
     API_PORT: int = 8000

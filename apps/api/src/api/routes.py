@@ -17,7 +17,11 @@ async def remove_background(file: UploadFile = File(...)) -> TaskResponse:
     if len(contents) > settings.MAX_FILE_SIZE:
         raise HTTPException(status_code=413, detail="File too large")
 
-    task = celery_app.send_task("remove_bg", args=[contents])
+    task = celery_app.send_task(
+        "remove_bg",
+        args=[contents],
+        queue=settings.CELERY_QUEUE,
+    )
     return TaskResponse(task_id=task.id)
 
 

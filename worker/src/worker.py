@@ -1,8 +1,10 @@
 import os
 
 from celery import Celery
+from kombu import Queue
 
 REDIS_URL = os.environ.get("REDIS_URL", "redis://redis:6379/0")
+CELERY_QUEUE = os.environ.get("CELERY_QUEUE", "bg-removal")
 
 celery_app = Celery(
     "bg-removal",
@@ -21,4 +23,6 @@ celery_app.conf.update(
     task_acks_late=True,
     worker_prefetch_multiplier=1,
     result_expires=3600,
+    task_default_queue=CELERY_QUEUE,
+    task_queues=(Queue(CELERY_QUEUE),),
 )
