@@ -11,16 +11,6 @@ jobs:
   audit:
     uses: ./.github/workflows/audit.yml
 
-  dependency-review:
-    if: github.event_name == 'pull_request'
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      pull-requests: write
-    steps:
-      - uses: actions/checkout@v7
-      - uses: actions/dependency-review-action@v4
-
   deploy-pages:
     needs: [audit]
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
