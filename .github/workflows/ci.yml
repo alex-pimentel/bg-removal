@@ -8,27 +8,21 @@ on:
   workflow_dispatch:
 
 jobs:
-  lint:
-    uses: ./.github/workflows/lint.yml
-
-  test:
-    needs: [lint]
-    uses: ./.github/workflows/test.yml
-
-  security:
-    needs: [lint]
-    uses: ./.github/workflows/security.yml
-
   audit:
-    needs: [lint]
     uses: ./.github/workflows/audit.yml
 
-  build:
-    needs: [test, security, audit]
-    uses: ./.github/workflows/build.yml
+  dependency-review:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/dependency-review-action@v4
 
   deploy-pages:
-    needs: [build]
+    needs: [audit]
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     uses: ./.github/workflows/deploy.yml
     secrets: inherit

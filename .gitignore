@@ -15,6 +15,11 @@ env/
 
 # Node
 node_modules/
+coverage/
+*.tsbuildinfo
+.vitest/
+playwright-report/
+src/output.css
 
 # IDE
 .vscode/
@@ -45,6 +50,8 @@ images/test/
 .pytest_cache/
 htmlcov/
 .coverage
+coverage.xml
+coverage.json
 
 # Archives
 *.legacy.yml

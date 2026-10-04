@@ -1,0 +1,48 @@
+name: Quality
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  api:
+    uses: alex-pimentel/agenteresolve-ci/.github/workflows/python-quality.yml@main
+    with:
+      working_directory: apps/api
+      python_version: "3.11"
+      coverage: true
+      coverage_threshold: 95
+
+  worker:
+    uses: alex-pimentel/agenteresolve-ci/.github/workflows/python-quality.yml@main
+    with:
+      working_directory: worker
+      python_version: "3.11"
+      coverage: true
+      coverage_threshold: 95
+
+  web:
+    uses: alex-pimentel/agenteresolve-ci/.github/workflows/node-quality.yml@main
+    with:
+      working_directory: apps/web
+      package_manager: npm
+      coverage: true
+
+  security:
+    permissions:
+      contents: read
+      security-events: write
+    uses: alex-pimentel/agenteresolve-ci/.github/workflows/security-scan.yml@main
+
+  docker:
+    uses: alex-pimentel/agenteresolve-ci/.github/workflows/docker-build-scan.yml@main
+    with:
+      context: apps/api
+      image_name: bg-removal-api
+
+  docker-worker:
+    uses: alex-pimentel/agenteresolve-ci/.github/workflows/docker-build-scan.yml@main
+    with:
+      context: worker
+      image_name: bg-removal-worker

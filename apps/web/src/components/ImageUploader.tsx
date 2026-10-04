@@ -26,17 +26,14 @@ function resizeImage(file: File, maxDim: number): Promise<File> {
       }
       ctx.drawImage(img, 0, 0, width, height)
 
-      canvas.toBlob(
-        (blob) => {
-          if (!blob) {
-            reject(new Error("Failed to create blob"))
-            return
-          }
-          const resizedFile = new File([blob], file.name, { type: file.type })
-          resolve(resizedFile)
-        },
-        file.type,
-      )
+      canvas.toBlob((blob) => {
+        if (!blob) {
+          reject(new Error("Failed to create blob"))
+          return
+        }
+        const resizedFile = new File([blob], file.name, { type: file.type })
+        resolve(resizedFile)
+      }, file.type)
     }
     img.onerror = () => reject(new Error("Failed to load image"))
     img.src = URL.createObjectURL(file)
@@ -108,9 +105,7 @@ export default function ImageUploader({ onUpload }: Props) {
         }`}
       >
         <Upload className="mb-4 h-12 w-12 text-slate-400" />
-        <p className="text-lg font-medium text-slate-700">
-          Drop an image here
-        </p>
+        <p className="text-lg font-medium text-slate-700">Drop an image here</p>
         <p className="mt-1 text-sm text-slate-500">or click to browse</p>
         <p className="mt-2 text-xs text-slate-400">PNG, JPG, WEBP up to 10MB</p>
         <input
@@ -124,7 +119,8 @@ export default function ImageUploader({ onUpload }: Props) {
       <div className="mt-4 flex items-center justify-center gap-1.5 text-xs text-slate-400">
         <Info className="h-3.5 w-3.5 shrink-0" />
         <span>
-          Output limited to {MAX_DIMENSION}&times;{MAX_DIMENSION}px. Need higher resolution?{" "}
+          Output limited to {MAX_DIMENSION}&times;{MAX_DIMENSION}px. Need higher
+          resolution?{" "}
           <a
             href="mailto:alex@agenteresolve.com.br"
             className="text-blue-500 hover:text-blue-600 underline"
