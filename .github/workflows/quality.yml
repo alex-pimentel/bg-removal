@@ -43,6 +43,7 @@ jobs:
     uses: alex-pimentel/agenteresolve-ci/.github/workflows/docker-build-scan.yml@main
     with:
       context: apps/api
+      dockerfile: apps/api/Dockerfile
       image_name: bg-removal-api
 
   docker-worker:
@@ -52,4 +53,5 @@ jobs:
     uses: alex-pimentel/agenteresolve-ci/.github/workflows/docker-build-scan.yml@main
     with:
       context: worker
+      dockerfile: worker/Dockerfile
       image_name: bg-removal-worker
