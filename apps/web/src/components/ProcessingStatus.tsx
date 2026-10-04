@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react"
 import { Loader2 } from "lucide-react"
 import { getTaskStatus } from "../lib/api"
+import { useApiToken } from "../lib/apiToken"
 
 interface Props {
   taskId: string
@@ -29,6 +30,7 @@ const PHASE_LABELS: Record<Phase, { title: string; description: string }> = {
 
 export default function ProcessingStatus({ taskId, onComplete }: Props) {
   const [phase, setPhase] = useState<Phase>("uploading")
+  const getToken = useApiToken()
 
   useEffect(() => {
     let cancelled = false
@@ -37,9 +39,11 @@ export default function ProcessingStatus({ taskId, onComplete }: Props) {
       setPhase("uploading")
       await new Promise((r) => setTimeout(r, 500))
 
+      const token = await getToken()
+
       while (!cancelled) {
         try {
-          const data = await getTaskStatus(taskId)
+          const data = await getTaskStatus(taskId, token)
           if (cancelled) break
 
           const newPhase = STATUS_MAP[data.status] ?? "queued"
@@ -62,7 +66,7 @@ export default function ProcessingStatus({ taskId, onComplete }: Props) {
     return () => {
       cancelled = true
     }
-  }, [taskId, onComplete])
+  }, [taskId, onComplete, getToken])
 
   const current = PHASE_LABELS[phase]
 

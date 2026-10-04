@@ -60,23 +60,26 @@
          └──────┬───────┘
                 │ POST /api/remove-bg/
                 ▼
-         ┌──────────────┐
-         │  FastAPI     │──── task_id ───→ ┌──────────────┐
-         │  :8000       │                  │   Celery     │
-         └──────┬───────┘                  │   Worker     │
-                │ task → Redis             │  (rembg)     │
-                ▼                          └──────┬───────┘
-         ┌──────────────┐                        │ result
-         │    Redis     │◄───────────────────────┘
-         │  (broker)    │
-         └──────┬───────┘
-                │ polling: GET /api/tasks/{id}/status
-                ▼
-         ┌──────────────┐
-         │  Frontend    │──── download: GET /api/tasks/{id}/result
+         ┌──────────────┐                  ┌──────────────┐
+         │  FastAPI     │──── task_id ───→ │   Celery     │
+         │  :8000       │                  │   Worker     │
+         └──────┬───────┘                  │  (rembg)     │
+                │ task → Redis             └──────┬───────┘
+                ▼                                 │ result
+         ┌──────────────┐                         ▼
+         │    Redis     │                  ┌──────────────┐
+         │  (state)     │                  │  Cloudflare  │
+         └──────┬───────┘                  │  R2 (tmp)    │
+                │ polling: GET /status     └──────┬───────┘
+                ▼                                 │ presigned GET
+         ┌──────────────┐                         │
+         │  Frontend    │←─ 302 ──────────────────┘
          │  (preview)   │
          └──────────────┘
 ```
+
+Result images live in the private R2 `tmp` bucket (`tmp/results/bg-removal/{task_id}/result.png`,
+24h lifecycle). Redis keeps only Celery task state.
 
 ---
 
@@ -88,6 +91,9 @@
 | **Frontend** | [React 19](https://react.dev/) + [TypeScript](https://www.typescriptlang.org/) + [Vite](https://vite.dev/) |
 | **UI** | [Tailwind CSS 4](https://tailwindcss.com/) + [Shadcn UI](https://ui.shadcn.com/) |
 | **Queue** | [Celery](https://docs.celeryq.dev/) + [Redis](https://redis.io/) |
+| **Storage** | [Cloudflare R2](https://developers.cloudflare.com/r2/) (S3 API, 24h `tmp` bucket) |
+| **Auth** | [Clerk](https://clerk.com/) (optional JWT, anonymous allowed) |
+| **Design system** | [`@agenteresolve/ui`](https://github.com/alex-pimentel/agenteresolve-ui) Service Shell |
 | **AI Model** | [rembg](https://github.com/danielgatis/rembg) (U²-Net) |
 | **Container** | [Docker Compose](https://docs.docker.com/compose/) |
 | **CI/CD** | [GitHub Actions](https://github.com/features/actions) |
@@ -157,16 +163,37 @@ docker compose -f docker/docker-compose.yml up --build
 ## 🔄 How it Works
 
 1. **Upload** — Drag & drop image in the web UI → `POST /api/remove-bg/`
-2. **Queue** — API enqueues a Celery task → returns `task_id` immediately
-3. **Process** — Celery worker picks up the task, runs `rembg` to remove background
+2. **Queue** — API stores the upload in R2 and enqueues a Celery task → returns `task_id` immediately
+3. **Process** — Celery worker picks up the task, runs `rembg`, and uploads the result to R2
 4. **Poll** — Frontend polls `GET /api/tasks/{id}/status` every second
-5. **Download** — Once complete, preview side-by-side and download PNG
+5. **Download** — `GET /api/tasks/{id}/result` returns a `302` redirect to a short-lived presigned R2 URL
 
 ```
 POST /api/remove-bg/  →  { task_id: "abc-123" }
 GET  /api/tasks/abc-123/status  →  PENDING → STARTED → SUCCESS
-GET  /api/tasks/abc-123/result  →  image/png (binary)
+GET  /api/tasks/abc-123/result  →  302 → presigned R2 URL (expires in RESULT_URL_TTL)
 ```
+
+### Authentication (optional)
+
+Mutating endpoints accept an optional Clerk JWT (`Authorization: Bearer <token>`).
+Anonymous use is always allowed. Tokens are verified locally against the Clerk
+JWKS (`CLERK_JWKS_URL` / `CLERK_ISSUER` / `CLERK_AUDIENCE`). No user content is stored.
+
+### Storage configuration
+
+Results and uploads are stored in Cloudflare R2 (private `tmp` bucket, 24h
+lifecycle). Set the following (never commit real values):
+
+```
+R2_ACCESS_KEY_ID=
+R2_SECRET_ACCESS_KEY=
+R2_ENDPOINT=https://<account_id>.r2.cloudflarestorage.com
+R2_BUCKET_TMP=agenteresolve-tmp
+RESULT_URL_TTL=900
+```
+
+Frontend (`apps/web/.env`) adds `VITE_API_URL` and `VITE_CLERK_PUBLISHABLE_KEY`.
 
 ---
 
@@ -230,7 +257,8 @@ make act-all
 | Max file size | 10MB |
 | Supported formats | PNG, JPEG, WEBP |
 | Queue broker | Redis |
-| Task result TTL | 1 hour |
+| Result storage | Cloudflare R2 (tmp, 24h lifecycle) |
+| Task state TTL | 1 hour |
 
 ---
 

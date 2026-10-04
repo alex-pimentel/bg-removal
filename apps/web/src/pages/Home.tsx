@@ -2,25 +2,27 @@ import { useState } from "react"
 import ImageUploader from "../components/ImageUploader"
 import ImagePreview from "../components/ImagePreview"
 import ProcessingStatus from "../components/ProcessingStatus"
+import { getResultUrl, uploadImage } from "../lib/api"
+import { useApiToken } from "../lib/apiToken"
 
 export default function Home() {
   const [taskId, setTaskId] = useState<string | null>(null)
   const [image, setImage] = useState<string | null>(null)
   const [resultUrl, setResultUrl] = useState<string | null>(null)
+  const getToken = useApiToken()
 
   const handleUpload = async (file: File) => {
     const reader = new FileReader()
     reader.onload = (e) => setImage(e.target?.result as string)
     reader.readAsDataURL(file)
 
-    const { uploadImage } = await import("../lib/api")
-    const response = await uploadImage(file)
+    const token = await getToken()
+    const response = await uploadImage(file, token)
     setTaskId(response.task_id)
   }
 
   const handleComplete = (completedTaskId: string) => {
-    const base = import.meta.env.VITE_API_URL || "/api"
-    setResultUrl(`${base}/tasks/${completedTaskId}/result`)
+    setResultUrl(getResultUrl(completedTaskId))
   }
 
   const handleReset = () => {
