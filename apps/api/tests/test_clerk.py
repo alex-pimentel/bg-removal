@@ -46,7 +46,9 @@ def _token(private_key: rsa.RSAPrivateKey, **overrides) -> str:
 def _clerk_settings(monkeypatch):
     monkeypatch.setattr(settings, "CLERK_ISSUER", ISSUER)
     monkeypatch.setattr(settings, "CLERK_AUDIENCE", AUDIENCE)
-    monkeypatch.setattr(settings, "CLERK_JWKS_URL", "https://clerk.example.com/.well-known/jwks.json")
+    monkeypatch.setattr(
+        settings, "CLERK_JWKS_URL", "https://clerk.example.com/.well-known/jwks.json"
+    )
 
 
 @pytest.fixture

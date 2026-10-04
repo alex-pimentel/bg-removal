@@ -34,20 +34,14 @@ export default function Home() {
   return (
     <div className="mx-auto max-w-5xl px-4 py-12">
       <div className="rounded-xl border border-slate-200 bg-white p-8 shadow-sm">
-        {!image && !taskId && !resultUrl && (
-          <ImageUploader onUpload={handleUpload} />
-        )}
+        {!image && !taskId && !resultUrl && <ImageUploader onUpload={handleUpload} />}
 
         {taskId && !resultUrl && (
           <ProcessingStatus taskId={taskId} onComplete={handleComplete} />
         )}
 
         {resultUrl && image && (
-          <ImagePreview
-            original={image}
-            resultUrl={resultUrl}
-            onReset={handleReset}
-          />
+          <ImagePreview original={image} resultUrl={resultUrl} onReset={handleReset} />
         )}
       </div>
     </div>

@@ -22,8 +22,11 @@ dev = [
     "pytest>=8.0.0",
     "pytest-asyncio>=0.24.0",
     "pytest-mock>=3.14.0",
+    "pytest-cov>=5.0.0",
     "ruff>=0.6.0",
     "mypy>=1.11.0",
+    "bandit>=1.7.0",
+    "pip-audit>=2.7.0",
 ]
 
 [tool.ruff]
@@ -37,3 +40,18 @@ select = ["E", "F", "I", "N", "W", "UP"]
 python_version = "3.11"
 strict = true
 ignore_missing_imports = true
+exclude = ["\\.venv", "tests"]
+
+[tool.bandit]
+exclude_dirs = ["tests", ".venv"]
+skips = ["B104"]
+
+[tool.coverage.run]
+source = ["src"]
+omit = ["tests/*", ".venv/*"]
+
+[tool.coverage.report]
+show_missing = true
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"

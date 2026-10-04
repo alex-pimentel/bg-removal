@@ -1,4 +1,5 @@
 import io
+from typing import Any
 
 from PIL import Image
 from rembg import remove
@@ -9,9 +10,9 @@ from src.worker import celery_app
 
 
 @celery_app.task(name="remove_bg", bind=True, max_retries=3, default_retry_delay=5)
-def remove_bg(self, image_bytes: bytes) -> dict:
+def remove_bg(self: Any, image_bytes: bytes) -> dict[str, Any]:
     try:
-        input_image = Image.open(io.BytesIO(image_bytes))
+        input_image: Image.Image = Image.open(io.BytesIO(image_bytes))
         input_image = resize_image_safe(input_image, MAX_DIMENSION)
         output_image = remove(input_image)
         output_buffer = io.BytesIO()

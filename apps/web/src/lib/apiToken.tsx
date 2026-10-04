@@ -13,9 +13,7 @@ function LiveTokenProvider({ children }: { children: ReactNode }) {
 
 function AnonymousTokenProvider({ children }: { children: ReactNode }) {
   return (
-    <TokenContext.Provider value={async () => null}>
-      {children}
-    </TokenContext.Provider>
+    <TokenContext.Provider value={async () => null}>{children}</TokenContext.Provider>
   )
 }
 

@@ -5,11 +5,7 @@ import { ApiTokenProvider } from "./lib/apiToken"
 function Logo() {
   return (
     <a href="https://agenteresolve.com.br" className="flex items-center gap-2">
-      <img
-        src="/logo_agenteresolve.png"
-        alt="Agenteresolve"
-        className="h-8 w-auto"
-      />
+      <img src="/logo_agenteresolve.png" alt="Agenteresolve" className="h-8 w-auto" />
     </a>
   )
 }

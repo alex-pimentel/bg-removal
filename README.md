@@ -209,12 +209,9 @@ make test         # Run API tests
 make lint         # Lint backend code
 make clean        # Remove all containers and volumes
 
-make act-lint      # Simulate lint workflow locally (via act)
-make act-test      # Simulate test workflow locally (Redis included)
-make act-security  # Simulate security workflow locally
-make act-audit     # Simulate audit workflow locally
-make act-build     # Simulate build workflow locally
-make act-all       # Simulate all workflows sequentially
+make act-ci        # Simulate the CI workflow locally (via act)
+make act-quality   # Simulate the shared quality callers locally (via act)
+make act-audit     # Simulate the audit workflow locally
 ```
 
 ---
@@ -229,6 +226,31 @@ docker compose -f docker/docker-compose.yml exec api pytest
 bash scripts/run_all_audits.sh
 ```
 
+### Quality gates
+
+Each component is checked independently with the same gates used in CI:
+
+```bash
+# apps/api
+cd apps/api && ruff check . && ruff format --check . && mypy . \
+  && bandit -c pyproject.toml -r . -x ./.venv,./tests \
+  && pytest --cov=. --cov-fail-under=95 && pip-audit
+
+# worker
+cd worker && ruff check . && ruff format --check . && mypy . \
+  && bandit -c pyproject.toml -r . -x ./.venv,./tests \
+  && pytest --cov=. --cov-fail-under=95 && pip-audit
+
+# apps/web
+cd apps/web && npm ci && npm run lint && npm run format:check && npm run types \
+  && npm run test:coverage && npm run build && npm audit --audit-level=high
+```
+
+Coverage floors: `apps/api` 95%, `worker` 95%; the web thresholds live in
+`apps/web/vite.config.ts`. Shared gates are defined in
+[`alex-pimentel/agenteresolve-ci`](https://github.com/alex-pimentel/agenteresolve-ci)
+and called from `.github/workflows/quality.yml`.
+
 ### Local CI simulation
 
 Requires [act](https://github.com/nektos/act) + Docker:
@@ -237,14 +259,9 @@ Requires [act](https://github.com/nektos/act) + Docker:
 # Install act
 curl -s https://raw.githubusercontent.com/nektos/act/master/install.sh | sudo bash -s -- -b /usr/local/bin
 
-# Simulate a single workflow
-make act-lint
-
-# Simulate all workflows
-make act-all
+# Simulate the project-specific audit workflow
+make act-audit
 ```
-
-`make act-test` automatically provisions a Redis container via `services.redis` — no manual setup needed.
 
 ---
 

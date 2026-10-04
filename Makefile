@@ -1,5 +1,5 @@
 .PHONY: dev dev-build dev-down prod prod-build prod-down test lint clean \
-        act-check act-ci act-lint act-test act-security act-audit act-build act-all
+        act-check act-ci act-quality act-audit
 
 # Development
 dev:
@@ -42,27 +42,11 @@ act-check:
 act-ci: act-check
 	$(ACT) --bind push -W .github/workflows/ci.yml
 
-act-lint: act-check
-	$(ACT) --bind workflow_dispatch -W .github/workflows/lint.yml
-
-act-test: act-check
-	$(ACT) --bind workflow_dispatch -W .github/workflows/test.yml
-
-act-security: act-check
-	$(ACT) --bind workflow_dispatch -W .github/workflows/security.yml
+act-quality: act-check
+	$(ACT) --bind push -W .github/workflows/quality.yml
 
 act-audit: act-check
 	$(ACT) --bind workflow_dispatch -W .github/workflows/audit.yml
-
-act-build: act-check
-	$(ACT) --bind workflow_dispatch -W .github/workflows/build.yml
-
-act-all: act-check
-	$(ACT) --bind workflow_dispatch -W .github/workflows/lint.yml && \
-	$(ACT) --bind workflow_dispatch -W .github/workflows/test.yml && \
-	$(ACT) --bind workflow_dispatch -W .github/workflows/security.yml && \
-	$(ACT) --bind workflow_dispatch -W .github/workflows/audit.yml && \
-	$(ACT) --bind workflow_dispatch -W .github/workflows/build.yml
 
 # Cleanup
 clean:

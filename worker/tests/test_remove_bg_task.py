@@ -3,6 +3,7 @@ from __future__ import annotations
 import io
 from unittest.mock import MagicMock
 
+import pytest
 from PIL import Image
 
 
@@ -45,3 +46,12 @@ def test_task_does_not_write_result_blob_to_redis(mocker):
     task_module.remove_bg.apply(args=[_png()]).get()
 
     assert redis_cls.call_count == 0
+
+
+def test_task_retries_on_failure(mocker):
+    from src.tasks import remove_bg as task_module
+
+    mocker.patch.object(task_module, "remove", side_effect=ValueError("removal failed"))
+
+    with pytest.raises(Exception, match="removal failed"):
+        task_module.remove_bg.apply(args=[_png()]).get()
