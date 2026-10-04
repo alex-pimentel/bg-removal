@@ -31,12 +31,14 @@ jobs:
       coverage: true
 
   security:
+    needs: [api, worker, web]
     permissions:
       contents: read
       security-events: write
     uses: alex-pimentel/agenteresolve-ci/.github/workflows/security-scan.yml@main
 
   docker:
+    needs: [api]
     permissions:
       contents: read
       security-events: write
@@ -47,6 +49,7 @@ jobs:
       image_name: bg-removal-api
 
   docker-worker:
+    needs: [worker]
     permissions:
       contents: read
       security-events: write
