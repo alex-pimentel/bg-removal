@@ -3,11 +3,10 @@ import { describe, expect, it } from "vitest"
 import App from "./App"
 
 describe("App", () => {
-  it("renders the header and footer", () => {
+  it("renders the service shell navigation and uploader", () => {
     render(<App />)
 
-    expect(screen.getByText("bg-removal")).toBeDefined()
-    expect(screen.getByText("alexwebmaster.com.br")).toBeDefined()
+    expect(screen.getAllByText("Remover fundo").length).toBeGreaterThan(0)
     expect(screen.getByText("Drop an image here")).toBeDefined()
   })
 })

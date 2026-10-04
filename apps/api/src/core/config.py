@@ -25,6 +25,16 @@ class Settings(BaseSettings):
 
     MAX_FILE_SIZE: int = 10 * 1024 * 1024
 
+    R2_ACCESS_KEY_ID: str = ""
+    R2_SECRET_ACCESS_KEY: str = ""
+    R2_ENDPOINT: str = ""
+    R2_BUCKET_TMP: str = "agenteresolve-tmp"
+    RESULT_URL_TTL: int = 900
+
+    CLERK_JWKS_URL: str = ""
+    CLERK_ISSUER: str = ""
+    CLERK_AUDIENCE: str = ""
+
     @field_validator("CORS_ORIGINS", mode="before")
     @classmethod
     def parse_cors_origins(cls, v: object) -> list[str]:

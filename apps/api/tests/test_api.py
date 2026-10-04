@@ -1,5 +1,7 @@
 import io
+from unittest.mock import MagicMock
 
+import pytest
 from fastapi.testclient import TestClient
 from PIL import Image
 
@@ -14,10 +16,6 @@ def _png_bytes() -> bytes:
     buf = io.BytesIO()
     img.save(buf, format="PNG")
     return buf.getvalue()
-
-
-class _FakeTask:
-    id = "test-task-id"
 
 
 class _FakeAsyncResult:
@@ -41,12 +39,12 @@ class _FakeAsyncResult:
         return self._successful
 
 
-class _FakeRedis:
-    def __init__(self, value: bytes | None) -> None:
-        self._value = value
-
-    async def get(self, key: str) -> bytes | None:
-        return self._value
+@pytest.fixture(autouse=True)
+def _isolate_external_services(mocker):
+    task = MagicMock()
+    task.id = "test-task-id"
+    mocker.patch("src.api.routes.celery_app.send_task", return_value=task)
+    mocker.patch("src.api.routes.r2.upload_input", return_value="tmp/uploads/test")
 
 
 def test_health() -> None:
@@ -55,11 +53,7 @@ def test_health() -> None:
     assert response.json() == {"status": "ok"}
 
 
-def test_remove_background_returns_task_id(monkeypatch) -> None:
-    monkeypatch.setattr(
-        "src.api.routes.celery_app.send_task",
-        lambda *args, **kwargs: _FakeTask(),
-    )
+def test_remove_background_returns_task_id() -> None:
     files = {"file": ("test.png", _png_bytes(), "image/png")}
     response = client.post("/api/remove-bg/", files=files)
     assert response.status_code == 200
@@ -77,6 +71,16 @@ def test_remove_background_file_too_large(monkeypatch) -> None:
 def test_remove_background_invalid_file() -> None:
     response = client.post("/api/remove-bg/")
     assert response.status_code == 422
+
+
+def test_task_status_not_found(monkeypatch) -> None:
+    monkeypatch.setattr(
+        "src.api.routes.AsyncResult",
+        lambda task_id, app=None: _FakeAsyncResult("PENDING"),
+    )
+    response = client.get("/api/tasks/invalid-id/status")
+    assert response.status_code == 200
+    assert response.json()["status"] in ("PENDING", "FAILURE")
 
 
 def test_task_status_pending(monkeypatch) -> None:
@@ -116,22 +120,19 @@ def test_task_status_failure(monkeypatch) -> None:
 
 
 def test_task_result_not_found(monkeypatch) -> None:
-    async def _fake_get_redis() -> _FakeRedis:
-        return _FakeRedis(None)
+    def _raise(task_id: str) -> str:
+        raise KeyError("missing")
 
-    monkeypatch.setattr("src.api.routes.get_redis", _fake_get_redis)
+    monkeypatch.setattr("src.api.routes.r2.presigned_result_url", _raise)
     response = client.get("/api/tasks/abc/result")
     assert response.status_code == 404
 
 
-def test_task_result_returns_png(monkeypatch) -> None:
-    payload = b"\x89PNG\r\n\x1a\nfake"
-
-    async def _fake_get_redis() -> _FakeRedis:
-        return _FakeRedis(payload)
-
-    monkeypatch.setattr("src.api.routes.get_redis", _fake_get_redis)
-    response = client.get("/api/tasks/abc/result")
-    assert response.status_code == 200
-    assert response.headers["content-type"] == "image/png"
-    assert response.content == payload
+def test_task_result_redirects_to_presigned_url(monkeypatch) -> None:
+    monkeypatch.setattr(
+        "src.api.routes.r2.presigned_result_url",
+        lambda task_id: f"https://signed.example/{task_id}",
+    )
+    response = client.get("/api/tasks/abc/result", follow_redirects=False)
+    assert response.status_code == 307
+    assert response.headers["location"] == "https://signed.example/abc"

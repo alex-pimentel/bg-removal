@@ -4,6 +4,7 @@ from typing import Any
 from PIL import Image
 from rembg import remove
 
+from src.tasks import storage
 from src.tasks.resize import MAX_DIMENSION, resize_image_safe
 from src.worker import celery_app
 
@@ -18,12 +19,7 @@ def remove_bg(self: Any, image_bytes: bytes) -> dict[str, Any]:
         output_image.save(output_buffer, format="PNG")
 
         result_bytes = output_buffer.getvalue()
-
-        from celery import current_app
-        from redis import Redis
-
-        r = Redis.from_url(current_app.conf.result_backend)
-        r.set(f"result:{self.request.id}", result_bytes, ex=3600)
+        storage.upload_result(self.request.id, result_bytes)
 
         return {"status": "completed", "task_id": self.request.id}
     except Exception as exc:

@@ -1,17 +1,23 @@
-from celery.result import AsyncResult
-from fastapi import APIRouter, File, HTTPException, UploadFile
-from fastapi.responses import Response
+from typing import Annotated, Any
 
+from celery.result import AsyncResult
+from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
+from fastapi.responses import RedirectResponse
+
+from src.api.deps import optional_clerk_user
+from src.core import r2
 from src.core.celery_app import celery_app
 from src.core.config import settings
-from src.core.redis import get_redis
 from src.models.schemas import TaskResponse, TaskStatusResponse
 
 router = APIRouter()
 
 
 @router.post("/remove-bg/", response_model=TaskResponse)
-async def remove_background(file: UploadFile = File(...)) -> TaskResponse:
+async def remove_background(
+    file: Annotated[UploadFile, File(...)],
+    user: Annotated[dict[str, Any] | None, Depends(optional_clerk_user)] = None,
+) -> TaskResponse:
     contents = await file.read()
 
     if len(contents) > settings.MAX_FILE_SIZE:
@@ -22,6 +28,14 @@ async def remove_background(file: UploadFile = File(...)) -> TaskResponse:
         args=[contents],
         queue=settings.CELERY_QUEUE,
     )
+
+    r2.upload_input(
+        task.id,
+        file.filename or "upload",
+        contents,
+        content_type=file.content_type or "application/octet-stream",
+    )
+
     return TaskResponse(task_id=task.id)
 
 
@@ -44,11 +58,10 @@ async def get_task_status(task_id: str) -> TaskStatusResponse:
 
 
 @router.get("/tasks/{task_id}/result")
-async def get_task_result(task_id: str) -> Response:
-    redis_client = await get_redis()
-    result_data = await redis_client.get(f"result:{task_id}")
+async def get_task_result(task_id: str) -> RedirectResponse:
+    try:
+        url = r2.presigned_result_url(task_id)
+    except Exception as exc:
+        raise HTTPException(status_code=404, detail="Result not found") from exc
 
-    if result_data is None:
-        raise HTTPException(status_code=404, detail="Result not found")
-
-    return Response(content=result_data, media_type="image/png")
+    return RedirectResponse(url=url, status_code=307)
